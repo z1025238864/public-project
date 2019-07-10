@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="./js/moment.js"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        div{
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            margin: auto;
+            color: rgba(255, 255, 255, .3)
+        }
+
+
+        #box{
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            border: 1px solid;
+        }
+        #box > div{
+            /* border: 1px solid; */
+            border-radius: 50%;
+        }
+        #box > div > div{
+            width: 75px;
+            height: 30px;
+            /* border: 1px solid blue; */
+            text-shadow: 2px 2px 2px rgba(0, 0, 0, .5);
+            text-align: right;
+            line-height: 30px;
+            transform: rotate(0deg) translateX(387px);
+        }
+        .years{
+            width: 100px;
+            height: 30px;
+        
+            /* border: 1px solid; */
+            font-size:16px;
+            line-height: 30px;
+            text-align: center;
+        }
+        .month{
+            width: 500px;
+            height: 500px;
+            /* border: 1px solid  */
+            }
+        .hour{
+            width: 500px;
+            height: 500px;
+            /* border: 1px solid  */
+            }
+        #box .now{
+            color: white;
+            text-shadow: 2px 2px 2px rgba(255, 0, 0, .5)
+        }
+    </style>
+</head>
+<body style="background-color:black">
+    <div id="box">
+        <div class="years now">二零一九年</div>    
+        <div class="month"></div>    
+        <div class="day"></div>    
+        <div class="hour"></div>    
+        <div class="minutes"></div>    
+        <div class="seconds">
+            <div></div>
+        </div>   
+        
+    </div>
+    <script>
+        //2019-4-21 1:46
+            // let date = moment().format('YYYY,M,D,H,m,s').split(',')
+            // let date2 = converter(date)
+            // console.log(date2);
+
+            const box = document.getElementById('box');
+            const divs = [...box.children]     //获得box里的div 用forEach转化为数组
+            divs.forEach((v, i) => {
+                if (i) {
+                    v.style.width = v.style.height = 150 * i + 100 + 'px'
+                }
+            })
+
+            const chinese = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九',];
+            const unit = '月号点分秒' //单位
+            //10=>一零 =》十
+            // console.log(chinese.shift());
+
+            //数字转中文
+            const toChinese = v => {
+                let str = '';
+
+                if (v.length === 1) {
+                    str = chinese[v]
+                } else {
+                    let s1 = v[0];
+                    let s2 = v[1];
+                    str = (s1 == 1 ? '' : chinese[s1]) + '十' + (s2 == 0 ? '' : chinese[s2])
+                }
+                return str
+            }
+            // console.log(moment().format('YYYY,M,D,H,m,s').split(','))
+            // console.log(toChinese('23'));
+
+            //格式化单位
+            const converter = d => {
+                let YY = d.shift();
+                console.log(YY)
+
+                let year = '';
+
+                for (let y of YY) {
+                    year += chinese[y]
+
+                }
+
+                d.forEach((v, i) => {
+                    d.splice(i, 1, toChinese(v) + unit[i])
+                })
+                return [year + '年', ...d]
+            }
+            //生成div
+            const getString = obj=>`<div style='transform: rotate(${ obj.rotate }deg) 
+                translate(${ obj.tranX }px)'>${ obj.text }</div>`
+
+            const seconds = document.getElementsByClassName('seconds')[0];
+            const minutes = document.getElementsByClassName('minutes')[0];
+            const hour = document.getElementsByClassName('hour')[0];
+            const day = document.getElementsByClassName('day')[0];
+            const month = document.getElementsByClassName('month')[0];
+
+            let secDiv = '';
+            let minDiv = '';
+            let houDiv = '';
+            let dayDiv = '';
+            let monDiv = '';
+
+            for(var i = 0; i < 60 ; i ++){
+                 //生成秒盘
+                 secDiv += getString({
+                     rotate: 6 * i,
+                     tranX: 387,
+                     text:toChinese(i + '') + '秒'
+                 })
+                 //生成分盘
+                 minDiv += getString({
+                     rotate: 6 * i,
+                     tranX: 312,
+                     text:toChinese(i + '') + '分'
+                 })
+                 //生成时盘
+                 if(i < 24){
+                     houDiv += getString({
+                     rotate: 15 * i,
+                     tranX: 312 - 75,
+                     text:toChinese(i + '') + '时'
+                 })
+                 }
+                 //生成日盘
+                 if( i < 31){
+                     dayDiv += getString({
+                     rotate: 11.6 * i,
+                     tranX: 312 -75 -75,
+                     text:toChinese(i + 1 + '') + '号'
+                 })
+                 }
+                 //生成月盘
+                 if( i < 12){
+                     monDiv += getString({
+                     rotate: 30 * i,
+                     tranX: 312 -75 * 3,
+                     text:toChinese(i + 1 + '') + '月'
+                 })
+                 }
+
+            }
+
+           seconds.innerHTML = secDiv
+           minutes.innerHTML = minDiv
+           hour.innerHTML = houDiv
+           day.innerHTML = dayDiv
+           month.innerHTML = monDiv
+
+           let olddate = moment('2019-01-01 00:00:00').format('YYYY,M,D,H,m,s').split(',')
+           const hanlder = ()=>{
+               let date = moment().format('YYYY,M,D,H,m,s').split(',');
+               
+                
+               date.forEach((v,i)=>{
+                   if( v != olddate[i]){
+                       let base = 0;  //记录旋转角度
+                       let number = 0;  //记录任意一个盘的时刻
+
+                    // console.log(date[5]);
+                    
+                       switch (i) {
+                           case 1:
+                              //月 
+                              number = date[i] - 1;
+                              base = -30 * number;
+                               break;
+                           case 2:
+                             //日  
+                              number = date[i] - 1;
+                              base = -11.6 * number;
+                               break;
+                           case 3:
+                            //时
+                             number = date[i];
+                             base = -15 * number;
+                               break;
+                       
+                           default:
+                            //分盘和秒盘
+                             number = date[i];
+                             base = -6 * number;
+                               break;
+                       }
+                       if(base == 0 ){
+                           base = -360
+                       }
+                      
+                    //    if(i === 5){
+                    //        console.log(date[5]);
+                           
+                    //    }
+                       divs[i].dataset.number = number;
+                       divs[i].style.transform = `rotate(${base}deg)`;
+
+                       //变红
+                       let child = divs[i].children
+                       let prevChild = child[number == 0 ? child.length -1 : number - 1]
+                       if(prevChild.classList.contains('now')){
+                            prevChild.classList.remove('now')
+                       }
+                       child[number].classList.add('now');
+                   }
+               })
+              
+               olddate = date
+           }
+
+
+           divs.forEach((v, i) => {
+
+               v.addEventListener('transitionend', ()=>{
+                   console.log(v.dataset.number);
+                   
+                  if(v.dataset.number == 0){
+                      console.log('transitionend');
+                      
+                      //渲染引擎
+                      //异步
+                      //js引擎
+                      v.style.transitionDuration = '0'
+                      v.style.transform = 'rotate(0)'
+                     setTimeout(() => {
+                        v.style.transitionDuration = '.8s'
+                     }, 0)
+                  }
+               })
+           })
+
+
+
+
+           setInterval(hanlder,1000)
+
+    </script>
+</body>
+</html>
